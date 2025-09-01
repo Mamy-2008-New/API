@@ -1,0 +1,173 @@
+openapi: 3.0.0
+info:
+  title: API de Profils Utilisateur
+  version: 1.0.0
+  description: API pour gérer les profils utilisateur avec des mises à jour granulaires.
+
+paths:
+  /users:
+    post:
+      summary: Crée un ou plusieurs utilisateurs
+      [cite_start]description: Crée de nouveaux utilisateurs sans identifiant et retourne la liste des utilisateurs créés avec leurs identifiants. [cite: 137]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CreateUserProfile'
+            examples:
+              singleUser:
+                summary: Créer un utilisateur
+                value:
+                  - first_name: "Jane"
+                    last_name: "Doe"
+                    birthdate: "1995-05-20"
+                    email: "jane.doe@example.com"
+                    address_street: "123 Main St"
+                    address_city: "Anytown"
+                    address_country: "FR"
+                    address_postal_code: "75001"
+                    needs_newsletter: true
+                    language: "fr"
+      responses:
+        '201':
+          description: Utilisateurs créés avec succès.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProfile'
+
+  /users/{id}:
+    get:
+      summary: Retourne un utilisateur par son ID
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Informations complètes de l'utilisateur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          description: Utilisateur non trouvé.
+
+  /users/{id}/personalInfo:
+    put:
+      summary: Met à jour les informations personnelles
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalInfo'
+      responses:
+        '200':
+          description: Informations personnelles mises à jour.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /users/{id}/address:
+    put:
+      summary: Met à jour l'adresse
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+      responses:
+        '200':
+          description: Adresse mise à jour.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /users/{id}/preferences:
+    put:
+      summary: Met à jour les préférences
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preferences'
+      responses:
+        '200':
+          description: Préférences mises à jour.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+
+components:
+  parameters:
+    UserId:
+      name: id
+      in: path
+      required: true
+      description: ID de l'utilisateur
+      schema:
+        type: string
+
+  schemas:
+    PersonalInfo:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        birthdate:
+          type: string
+          format: date
+        email:
+          type: string
+          format: email
+
+    Address:
+      type: object
+      properties:
+        address_street:
+          type: string
+        address_city:
+          type: string
+        address_country:
+          type: string
+        address_postal_code:
+          type: string
+
+    Preferences:
+      type: object
+      properties:
+        needs_newsletter:
+          type: boolean
+        language:
+          type: string
+          enum: [mg, fr, eng]
+
+    CreateUserProfile:
+      allOf:
+        - $ref: '#/components/schemas/PersonalInfo'
+        - $ref: '#/components/schemas/Address'
+        - $ref: '#/components/schemas/Preferences'
+
+    UserProfile:
+      allOf:
+        - $ref: '#/components/schemas/CreateUserProfile'
+        - type: object
+          properties:
+            identifier:
+              type: string
+              readOnly: true
